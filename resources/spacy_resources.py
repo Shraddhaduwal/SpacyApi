@@ -69,15 +69,11 @@ class Data(Resource):
             person_names = obj.person_names()
             obj.names = Results(person_names)
             obj.names.save_to_db()
-            # present, past, future = obj.tense()
-            # print(present)
-            # obj_present = Results(present)
-            # obj_past = Results(past)
-            # obj_future = Results(future)
-            # obj_present.save_to_db()
-            # obj_past.save_to_db()
-            # obj_present.save_to_db()
-            # obj_future.save_to_db()
+
+            tenses = obj.tense()
+            obj_tense = Results(tenses)
+            obj_tense.save_to_db()
+
             return {'word_without_stopwords': result,
                     'nouns': nouns,
                     'adjectives': adjectives,
@@ -91,7 +87,8 @@ class Data(Resource):
                     'sentences_without_nouns': str(sentences_without_nouns),
                     'sentences_without_adjectives': str(sentences_without_adjectives),
                     'sentences_without_verbs': str(sentences_without_verbs),
-                    'person_names': person_names}
+                    'person_names': person_names,
+                    'sentences_with_different_tenses': tenses}
 
         return {"message": "Something is wrong"}
 
