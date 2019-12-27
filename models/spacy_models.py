@@ -330,9 +330,9 @@ class DataModel(db.Model):
                     future_tense_sentences.append(sent)
                     break
 
-        return {'present_tense_sentences': present_tense_sentences,
-                'past_tense_sentences': past_tense_sentences,
-                'future_tense_sentences': future_tense_sentences}
+        return {'present_tense_sentences': str(present_tense_sentences),
+                'past_tense_sentences': str(past_tense_sentences),
+                'future_tense_sentences': str(future_tense_sentences)}
 
     def save_to_db(self):
         db.session.add(self)
