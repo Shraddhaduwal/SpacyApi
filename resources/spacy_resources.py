@@ -1,5 +1,6 @@
 from flask_restful import Resource, reqparse
 from models.spacy_models import DataModel
+from models.results import Results
 
 
 # Resource class also called Model class
@@ -12,22 +13,71 @@ class Data(Resource):
         text = DataModel.find_by_text_id(text_id)
         if text:
             obj = DataModel(text_id, text.text_description)  # class object instance
-            result = obj.words_without_stopwords()
-            nouns = obj.total_nouns()
-            adjectives = obj.total_adjectives()
-            verbs = obj.total_verbs()
-            noun_noun_phrases = obj.noun_noun_phrase()
-            noun_adj_phrases = obj.noun_adj_phrase()
-            adj_noun_phrases = obj.adj_noun_phrase()
-            sentences_with_two_or_more_nouns = obj.sentences_with_two_or_more_nouns()
-            sentences_with_two_or_more_adj = obj.sentences_with_two_or_more_adj()
-            sentences_with_two_or_more_verbs = obj.sentences_with_two_or_more_verbs()
-            sentences_without_nouns = obj.sentences_without_noun()
-            sentences_without_adjectives = obj.sentences_without_adj()
-            sentences_without_verbs = obj.sentences_without_verbs()
-            person_names = obj.person_names()
-            tenses = obj.tense()
 
+            result = obj.words_without_stopwords()
+            obj_result = Results(result)
+            obj_result.save_to_db()
+
+            nouns = obj.total_nouns()
+            obj_noun = Results(nouns)
+            obj_noun.save_to_db()
+
+            adjectives = obj.total_adjectives()
+            obj_adjectives = Results(adjectives)
+            obj_adjectives.save_to_db()
+
+            verbs = obj.total_verbs()
+            obj_verbs = Results(verbs)
+            obj_verbs.save_to_db()
+
+            noun_noun_phrases = obj.noun_noun_phrase()
+            obj_noun_noun = Results(noun_noun_phrases)
+            obj_noun_noun.save_to_db()
+
+            noun_adj_phrases = obj.noun_adj_phrase()
+            obj_noun_adj = Results(noun_adj_phrases)
+            obj_noun_adj.save_to_db()
+
+            adj_noun_phrases = obj.adj_noun_phrase()
+            obj_adj_noun = Results(adj_noun_phrases)
+            obj_adj_noun.save_to_db()
+
+            sentences_with_two_or_more_nouns = obj.sentences_with_two_or_more_nouns()
+            obj_sentences_noun = Results(sentences_with_two_or_more_nouns)
+            obj_sentences_noun.save_to_db()
+
+            sentences_with_two_or_more_adj = obj.sentences_with_two_or_more_adj()
+            obj_sentences_adj = Results(sentences_with_two_or_more_adj)
+            obj_sentences_adj.save_to_db()
+
+            sentences_with_two_or_more_verbs = obj.sentences_with_two_or_more_verbs()
+            obj_sentences_verbs = Results(sentences_with_two_or_more_verbs)
+            obj_sentences_verbs.save_to_db()
+
+            sentences_without_nouns = obj.sentences_without_noun()
+            obj_sentences_without_noun = Results(sentences_without_nouns)
+            obj_sentences_without_noun.save_to_db()
+
+            sentences_without_adjectives = obj.sentences_without_adj()
+            obj_sentences_without_adjectives = Results(sentences_without_adjectives)
+            obj_sentences_without_adjectives.save_to_db()
+
+            sentences_without_verbs = obj.sentences_without_verbs()
+            obj_sentences_without_verbs = Results(sentences_without_verbs)
+            obj_sentences_without_verbs.save_to_db()
+
+            person_names = obj.person_names()
+            obj.names = Results(person_names)
+            obj.names.save_to_db()
+            # present, past, future = obj.tense()
+            # print(present)
+            # obj_present = Results(present)
+            # obj_past = Results(past)
+            # obj_future = Results(future)
+            # obj_present.save_to_db()
+            # obj_past.save_to_db()
+            # obj_present.save_to_db()
+            # obj_future.save_to_db()
             return {'word_without_stopwords': result,
                     'nouns': nouns,
                     'adjectives': adjectives,
@@ -41,8 +91,7 @@ class Data(Resource):
                     'sentences_without_nouns': str(sentences_without_nouns),
                     'sentences_without_adjectives': str(sentences_without_adjectives),
                     'sentences_without_verbs': str(sentences_without_verbs),
-                    'person_names': person_names,
-                    'sentences_with_different_tenses': str(tenses)}
+                    'person_names': person_names}
 
         return {"message": "Something is wrong"}
 
