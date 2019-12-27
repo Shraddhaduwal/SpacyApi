@@ -1,6 +1,8 @@
 import spacy
+import json
 from spacy.matcher import Matcher
 from collections import Counter
+from sqlalchemy.ext import mutable
 
 from db import db
 
@@ -33,6 +35,7 @@ class DataModel(db.Model):
         text_without_stopwords = [str(token) for token in doc if token.is_stop is False if token.is_punct is False\
                                   if token.is_space is False]
         # Token is a spacy.tokens.doc.Doc object and cannot be Json serialized, we need to convert it into string again
+        # return {'text_without_stopwords': text_without_stopwords}
         return {'text_without_stopwords': text_without_stopwords}
 
     def total_nouns(self):
@@ -147,7 +150,7 @@ class DataModel(db.Model):
             print("Total matches found:", len(matches))
 
             noun_adj_phrases = [doc[start:end].text for match_id, start, end in matches]
-            print(noun_adj_phrases)
+            # print(noun_adj_phrases)
             noun_adj_phrase_frequency = Counter(noun_adj_phrases)
             favorite_noun_adj_phrase = max(noun_adj_phrase_frequency, key=noun_adj_phrase_frequency.get)
 
@@ -192,7 +195,7 @@ class DataModel(db.Model):
         matcher.add('SENTENCES_WITH_2_OR_MORE_NOUNS', collect_sents, pattern)
         doc = nlp(str(self.text_description).lower())
         match = matcher(doc)
-        return matched_sentences
+        return {'sentences_with_two_or_more_nouns': matched_sentences}
 
     def sentences_with_two_or_more_adj(self):
         """Sentences with two or more adjectives"""
@@ -211,7 +214,7 @@ class DataModel(db.Model):
         doc = nlp(str(self.text_description).lower())
         matches = matcher(doc)
 
-        return matched_sentences
+        return {'sentences_with_two_or_more_adj': matched_sentences}
 
     def sentences_with_two_or_more_verbs(self):
         """Sentences with two or more verbs"""
@@ -230,7 +233,7 @@ class DataModel(db.Model):
         pattern = [{'POS': 'VERB'}, {'POS': 'VERB'}, {'POS': 'VERB', 'OP': '*'}]
         matcher.add('SENTENCES_WITH_2_OR_MORE_VERB', collect_sents, pattern)
 
-        return matched_sentences
+        return {'sentences_with_two_or_more_verbs': matched_sentences}
 
     def sentences_without_noun(self):
         """Sentences without noun"""
@@ -243,8 +246,7 @@ class DataModel(db.Model):
                 if token.pos_ == 'NOUN':
                     sentences.append(sentence)
                     break
-
-        return sentences
+        return {'sentences_without_nouns': str(sentences)}
 
     def sentences_without_adj(self):
         """Sentences without adjectives"""
@@ -258,7 +260,7 @@ class DataModel(db.Model):
                     sentences.append(sentence)
                     break
 
-        return sentences
+        return {'sentences_without_adj': str(sentences)}
 
     def sentences_without_verbs(self):
         """Sentences without verbs"""
@@ -271,7 +273,7 @@ class DataModel(db.Model):
                     sentences.append(sentence)
                     break
 
-        return sentences
+        return {'sentences_without_verbs': str(sentences)}
 
     def person_names(self):
         """Person names and their frequencies"""
@@ -339,3 +341,24 @@ class DataModel(db.Model):
     def delete_from_db(self):
         db.session.delete(self)
         db.session.commit()
+
+
+class JsonEncodedDict(db.TypeDecorator):
+    """Enables JSON storage by encoding and decoding on the fly."""
+    impl = db.Text
+
+    def process_bind_param(self, value, dialect):
+        if value is None:
+            return '{}'
+        else:
+            print(value)
+            return json.dumps(value)
+
+    def process_result_value(self, value, dialect):
+        if value is None:
+            return {}
+        else:
+            return json.loads(value)
+
+
+mutable.MutableDict.associate_with(JsonEncodedDict)
