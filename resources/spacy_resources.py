@@ -1,6 +1,7 @@
 from flask_restful import Resource, reqparse
 from models.spacy_models import DataModel
 from models.results import Results
+from nlp import operations
 
 
 # Resource class also called Model class
@@ -13,64 +14,66 @@ class Data(Resource):
         text = DataModel.find_by_text_id(text_id)
         if text:
             obj = DataModel(text_id, text.text_description)  # class object instance
+            text_desc = obj.text_description
+            # passing text_description(attribute of obj) to text_desc and to operations.py
 
-            result = obj.words_without_stopwords()
+            result = operations.words_without_stopwords(text_desc)
             obj_result = Results(result)
             obj_result.save_to_db()
 
-            nouns = obj.total_nouns()
+            nouns = operations.total_nouns(text_desc)
             obj_noun = Results(nouns)
             obj_noun.save_to_db()
 
-            adjectives = obj.total_adjectives()
+            adjectives = operations.total_adjectives(text_desc)
             obj_adjectives = Results(adjectives)
             obj_adjectives.save_to_db()
 
-            verbs = obj.total_verbs()
+            verbs = operations.total_verbs(text_desc)
             obj_verbs = Results(verbs)
             obj_verbs.save_to_db()
 
-            noun_noun_phrases = obj.noun_noun_phrase()
+            noun_noun_phrases = operations.noun_noun_phrase(text_desc)
             obj_noun_noun = Results(noun_noun_phrases)
             obj_noun_noun.save_to_db()
 
-            noun_adj_phrases = obj.noun_adj_phrase()
+            noun_adj_phrases = operations.noun_adj_phrase(text_desc)
             obj_noun_adj = Results(noun_adj_phrases)
             obj_noun_adj.save_to_db()
 
-            adj_noun_phrases = obj.adj_noun_phrase()
+            adj_noun_phrases = operations.adj_noun_phrase(text_desc)
             obj_adj_noun = Results(adj_noun_phrases)
             obj_adj_noun.save_to_db()
 
-            sentences_with_two_or_more_nouns = obj.sentences_with_two_or_more_nouns()
+            sentences_with_two_or_more_nouns = operations.sentences_with_two_or_more_nouns(text_desc)
             obj_sentences_noun = Results(sentences_with_two_or_more_nouns)
             obj_sentences_noun.save_to_db()
 
-            sentences_with_two_or_more_adj = obj.sentences_with_two_or_more_adj()
+            sentences_with_two_or_more_adj = operations.sentences_with_two_or_more_adj(text_desc)
             obj_sentences_adj = Results(sentences_with_two_or_more_adj)
             obj_sentences_adj.save_to_db()
 
-            sentences_with_two_or_more_verbs = obj.sentences_with_two_or_more_verbs()
+            sentences_with_two_or_more_verbs = operations.sentences_with_two_or_more_verbs(text_desc)
             obj_sentences_verbs = Results(sentences_with_two_or_more_verbs)
             obj_sentences_verbs.save_to_db()
 
-            sentences_without_nouns = obj.sentences_without_noun()
+            sentences_without_nouns = operations.sentences_without_noun(text_desc)
             obj_sentences_without_noun = Results(sentences_without_nouns)
             obj_sentences_without_noun.save_to_db()
 
-            sentences_without_adjectives = obj.sentences_without_adj()
+            sentences_without_adjectives = operations.sentences_without_adj(text_desc)
             obj_sentences_without_adjectives = Results(sentences_without_adjectives)
             obj_sentences_without_adjectives.save_to_db()
 
-            sentences_without_verbs = obj.sentences_without_verbs()
+            sentences_without_verbs = operations.sentences_without_verbs(text_desc)
             obj_sentences_without_verbs = Results(sentences_without_verbs)
             obj_sentences_without_verbs.save_to_db()
 
-            person_names = obj.person_names()
+            person_names = operations.person_names(text_desc)
             obj.names = Results(person_names)
             obj.names.save_to_db()
 
-            tenses = obj.tense()
+            tenses = operations.tense(text_desc)
             obj_tense = Results(tenses)
             obj_tense.save_to_db()
 
