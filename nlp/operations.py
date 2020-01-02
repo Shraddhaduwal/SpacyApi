@@ -1,6 +1,7 @@
 import spacy
 from spacy.matcher import Matcher
 from collections import Counter
+from utils.csv_writer import create_csv, create_csv_list, create_csv_dictionary
 
 nlp = spacy.load("en_core_web_sm")
 
@@ -14,7 +15,7 @@ def words_without_stopwords(text_description):
         text_without_stopwords = [str(token) for token in doc if token.is_stop is False if token.is_punct is False \
                                   if token.is_space is False]
         # Token is a spacy.tokens.doc.Doc object and cannot be Json serialized, we need to convert it into string again
-        # return {'text_without_stopwords': text_without_stopwords}
+        create_csv_list("text_without_stopwords.csv", "text_without_stopwords", text_without_stopwords)
         return {'text_without_stopwords': text_without_stopwords}
     except Exception:
         return {'message': 'No words'}
@@ -24,9 +25,16 @@ def total_nouns(text_description):
     """Noun words, total no of nouns, nouns frequencies"""
     nlp.pipe(text_description, disable=['tokenizer', 'tagger', 'parser', 'ner', 'textcat', '...'])
     doc = nlp(str(text_description).lower())
+
     nouns = [token.text for token in doc if token.pos_ == 'NOUN']
+    create_csv_list("noun_list.csv", "Noun_list", nouns)
+    create_csv("total_no_of_noun.csv", "Total_noun", len(nouns))
+
     noun_frequency = Counter(nouns)
+    create_csv_dictionary("noun_frequency.csv", "nouns", "frequency", noun_frequency)
+
     favorite_noun = max(noun_frequency, key=noun_frequency.get)
+    create_csv("favorite_noun.csv", "favorite_noun", favorite_noun)
     return {'nouns': nouns,
             'noun_count': len(nouns),
             'noun_frequency': noun_frequency,
@@ -38,11 +46,20 @@ def total_adjectives(text_description):
     nlp.pipe(text_description, disable=['tokenizer', 'tagger', 'parser', 'ner', 'textcat', '...'])
     print(nlp.pipe_names)
     doc = nlp(str(text_description).lower())
+
     adjectives = [token.text for token in doc if token.pos_ == 'ADJ']
+    create_csv("total_no_of_adj.csv", "Total_no_of_adjectives", len(adjectives))
+    create_csv_list("adjective_lists.csv", "Adjective_list", adjectives)
+
     adj_frequency = Counter(adjectives)
+    create_csv_dictionary("adj_frequency.csv", "Adjectives", "Frequency", adj_frequency)
+
     favorite_adjective = max(adj_frequency, key=adj_frequency.get)
+    create_csv("favorite_adjective.csv", "Favorite_adjective", favorite_adjective)
+
     list_of_tuples = sorted(adj_frequency.items(), reverse=True, key=lambda x: x[1])
     top_ten_adjectives = list_of_tuples[:10]
+    create_csv_list("top_10_adj.csv", "Top_ten_adjective_list", top_ten_adjectives)
 
     sents = doc.sents
     sentences_with_adj = []
@@ -102,9 +119,17 @@ def total_verbs(text_description):
     """Verbs, total no of verbs, verb frequencies"""
     nlp.pipe(text_description, disable=['tokenizer', 'tagger', 'parser', 'ner', 'textcat', '...'])
     doc = nlp(str(text_description).lower())
+
     verbs = [token.text for token in doc if token.pos_ == 'VERB']
+    create_csv("total_no_of_verbs.csv", "Total_no_of_verbs", len(verbs))
+    create_csv_list("verb_list.csv", "Verb_list", verbs)
+
     verb_frequency = Counter(verbs)
+    create_csv_dictionary("verb_frequency.csv", "Verbs", "Frequency", verb_frequency)
+
     favorite_verb = max(verb_frequency, key=verb_frequency.get)
+    create_csv("favorite_verb.csv", "Favorite_verbs", favorite_verb)
+
     return {'verbs': verbs,
             'verb_count': len(verbs),
             'verb_frequency': verb_frequency,
@@ -115,9 +140,18 @@ def noun_noun_phrase(text_description):
     """Noun-Noun phrases and their frequencies"""
     nlp.pipe(text_description, disable=['tokenizer', 'tagger', 'parser', 'ner', 'textcat', '...'])
     doc = nlp(str(text_description).lower())
+
     noun_noun_phrases = [chunk.text for chunk in doc.noun_chunks]
+    create_csv("total_noun_noun_phrase.csv", "Noun_noun_phrases", len(noun_noun_phrases))
+    create_csv_list("noun_noun_phrase_list.csv", "Noun_noun_phrase_list", noun_noun_phrases)
+
     noun_noun_phrase_frequency = Counter(noun_noun_phrases)
+    create_csv_dictionary("noun_noun_phrase_frequency.csv", "Noun_Noun_phrase",
+                          "Frequency", noun_noun_phrase_frequency)
+
     favorite_noun_noun = max(noun_noun_phrase_frequency, key=noun_noun_phrase_frequency.get)
+    create_csv("favorite_noun_noun.csv", "Favorite_noun_noun_phrase", favorite_noun_noun)
+
     return {'noun_noun_phrases': noun_noun_phrases,
             'noun_noun_phrase_count': len(noun_noun_phrases),
             'noun_noun_phrase_frequency': noun_noun_phrase_frequency,
@@ -136,9 +170,15 @@ def noun_adj_phrase(text_description):
         print("Total matches found:", len(matches))
 
         noun_adj_phrases = [doc[start:end].text for match_id, start, end in matches]
-        # print(noun_adj_phrases)
+        create_csv("total_noun_adj.csv", "Total_noun_adj", len(noun_adj_phrases))
+        create_csv_list("noun_adj_phrase_list.csv", "Noun_adj_phrase_list", noun_adj_phrases)
+
         noun_adj_phrase_frequency = Counter(noun_adj_phrases)
+        create_csv_dictionary("noun_adj_frequency.csv", "Noun_adj_phrases", "Frequency",
+                              noun_adj_phrase_frequency)
+
         favorite_noun_adj_phrase = max(noun_adj_phrase_frequency, key=noun_adj_phrase_frequency.get)
+        create_csv("favorite_noun_adj.csv", "Favorite_noun_adj_phrase", favorite_noun_adj_phrase)
 
         return {'noun_adj_phrases': noun_adj_phrases,
                 'noun_adj_phrase_count': len(noun_adj_phrases),
@@ -160,8 +200,15 @@ def adj_noun_phrase(text_description):
     print("Total matches found", len(matches))
 
     adj_noun_phrases = [doc[start:end].text for match_id, start, end in matches]
+    create_csv("total_adj_noun.csv", "Total_adj_noun", len(adj_noun_phrases))
+    create_csv_list("adj_noun_phrase_list.csv", "Adj_noun_phrase_list", adj_noun_phrases)
+
     adj_noun_phrase_frequency = Counter(adj_noun_phrases)
+    create_csv_dictionary("adj_noun_frequency.csv", "Adj_noun_phrases", "Frequency",
+                          adj_noun_phrase_frequency)
     favorite_adj_noun_phrase = max(adj_noun_phrase_frequency, key=adj_noun_phrase_frequency.get)
+    create_csv("favorite_adj_noun.csv", "Favorite_adj_noun_phrase", favorite_adj_noun_phrase)
+
     return {'adj_noun_phrases': adj_noun_phrases,
             'adj_noun_phrase_count': len(adj_noun_phrases),
             'adj_noun_phrase_frequency': adj_noun_phrase_frequency,
@@ -276,8 +323,11 @@ def person_names(text_description):
     doc = nlp(str(text_description).lower())
 
     names = [ent.text for ent in doc.ents if ent.label_ == "PERSON"]
+    create_csv("total_no_of_names.csv", "Total_no_of_person_names", len(names))
+    create_csv_list("name_list.csv", "Person_name_list", names)
 
     name_frequency = Counter(names)
+    create_csv_dictionary("name_frequency.csv", "Person_name", "Frequency", name_frequency)
 
     try:
         # Person name with maximum frequency
